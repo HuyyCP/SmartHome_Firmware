@@ -18,7 +18,7 @@ struct Device {
 };
 Device devices[4];
 
-bool isConnectedWifi = true;
+bool isConnectedWifi = false;
 bool isSetup = false;
 const String SERVER_BACKEND = "http://4dea-2402-800-629c-e161-c970-d2e3-1024-797d.ngrok-free.app";
 const String ESP_ID = "56d5c7f7-6b23-4f2d-9e98-ebea3ff643fa";
@@ -59,6 +59,7 @@ void setup() {
 
   if (!hasWifi && !isConnectedWifi) {
     // Nếu chưa có, phát AP để cấu hình
+    WiFi.mode(WIFI_AP); // set mode này để phát wifi
     WiFi.softAP(ssid, password);
     Serial.print("AP IP address: ");
     Serial.println(WiFi.softAPIP());
@@ -101,6 +102,9 @@ void setupWebServer() {
   server.on("/setup", HTTP_POST, []() {
     String ssid = server.arg("ssid");
     String password = server.arg("password");
+    WiFi.begin(ssid.c_str(), password.c_str());
+    Serial.println("Connecting to WiFi...");
+    isConnectedWifi = true;
     saveWiFiConfig(ssid, password);
     server.send(200, "text/plain", "WiFi credentials saved. Rebooting...");
     delay(1000);
